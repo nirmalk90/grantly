@@ -1,7 +1,7 @@
-import { useApp } from '../state/AppState';
-import { SCHOLARSHIPS } from '../data/scholarships';
+import { useAppActions, useAppState } from '../state/AppState';
 import { evaluate } from '../lib/match';
-import { daysUntil } from '../lib/dates';
+import { daysUntil, deadlineLabel } from '../lib/dates';
+import { getTrackedByStage } from '../lib/selectors';
 import { Button, Empty, PageHead, ProgressBar } from '../components/ui';
 import type { Stage } from '../types';
 
@@ -13,17 +13,12 @@ const STAGES: { key: Stage; label: string }[] = [
 ];
 
 export default function Applications() {
-  const { state, dispatch, notify } = useApp();
-  const tracked = Object.entries(state.tracking);
+  const state = useAppState();
+  const { dispatch, notify } = useAppActions();
+  const byStage = getTrackedByStage(state.tracking);
+  const trackedCount = Object.keys(state.tracking).length;
 
-  const byStage = (stage: Stage) =>
-    tracked
-      .map(([id, s]) => ({ id: Number(id), stage: s }))
-      .filter((t) => t.stage === stage)
-      .map((t) => SCHOLARSHIPS.find((s) => s.id === t.id))
-      .filter((s): s is NonNullable<typeof s> => s !== undefined);
-
-  if (tracked.length === 0) {
+  if (trackedCount === 0) {
     return (
       <>
         <PageHead eyebrow="Stay on top of every step" title="Your application pipeline.">
@@ -58,7 +53,7 @@ export default function Applications() {
 
       <div className="board" role="group" aria-label="Application stages">
         {STAGES.map(({ key, label }) => {
-          const items = byStage(key);
+          const items = byStage[key];
           return (
             <section key={key} className="board-col" aria-labelledby={`stage-${key}`}>
               <div className="board-head">
@@ -68,17 +63,14 @@ export default function Applications() {
               {items.length === 0 && <p className="board-empty">Nothing here yet</p>}
               {items.map((s) => {
                 const ev = evaluate(s, state.profile, state.readyDocs);
+                const days = daysUntil(s.deadline);
                 return (
                   <article key={s.id} className="task">
                     <p className="task-amt">{s.amount}</p>
                     <h3>{s.name}</h3>
-                    <small>
-                      {s.org} · {daysUntil(s.deadline)} days left
-                    </small>
+                    <small>{s.org} · {deadlineLabel(days)}</small>
                     <ProgressBar value={ev.docCompletion} label={`Documents ready for ${s.name}`} />
-                    <small>
-                      {ev.docsReady}/{ev.docsRequired} documents ready
-                    </small>
+                    <small>{ev.docsReady}/{ev.docsRequired} documents ready</small>
                     <ul className="doc-checklist compact">
                       {s.docs.map((doc) => {
                         const ready = state.readyDocs.includes(doc);
@@ -108,11 +100,7 @@ export default function Applications() {
                             if (stage === 'awarded') notify('Congratulations — that is wonderful news!');
                           }}
                         >
-                          {STAGES.map((st) => (
-                            <option key={st.key} value={st.key}>
-                              {st.label}
-                            </option>
-                          ))}
+                          {STAGES.map((st) => <option key={st.key} value={st.key}>{st.label}</option>)}
                         </select>
                       </label>
                       {s.applyUrl !== '' && (
@@ -121,8 +109,7 @@ export default function Applications() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-subtle btn-sm"
-                          title="Open official portal"
-                          style={{ textDecoration: 'none' }}
+                          aria-label={`Open official portal for ${s.name} (opens in a new tab)`}
                         >
                           Portal ↗
                         </a>
@@ -130,6 +117,7 @@ export default function Applications() {
                       <Button
                         small
                         variant="danger"
+                        aria-label={`Remove ${s.name} from tracker`}
                         onClick={() => {
                           dispatch({ type: 'untrack', id: s.id });
                           notify('Removed from your tracker');

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
+import { useDialog } from './useDialog';
 
 interface ModalProps {
   open: boolean;
@@ -9,52 +10,10 @@ interface ModalProps {
   wide?: boolean;
 }
 
-/** Accessible dialog: labelled, focus-trapped, Escape/backdrop dismissal, focus restoration. */
+/** Accessible dialog: labelled, focus-contained, Escape/backdrop dismissal, focus restoration. */
 export function Modal({ open, titleId, onClose, children, wide = false }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const restoreRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    restoreRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const panel = panelRef.current;
-    const focusable = panel?.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-    focusable?.focus();
-
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (event.key !== 'Tab' || panel == null) return;
-      const items = Array.from(
-        panel.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((el) => !el.hasAttribute('disabled'));
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (first === undefined || last === undefined) return;
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-      restoreRef.current?.focus();
-    };
-  }, [open, onClose]);
+  useDialog({ open, onClose, panelRef, initialFocus: 'panel' });
 
   if (!open) return null;
 
@@ -67,6 +26,7 @@ export function Modal({ open, titleId, onClose, children, wide = false }: ModalP
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
       >
         {children}
       </div>

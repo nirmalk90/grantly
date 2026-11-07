@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { useApp } from '../state/AppState';
+import { useAppActions, useAppState } from '../state/AppState';
 import { SCHOLARSHIPS } from '../data/scholarships';
-import { rankScholarships } from '../lib/match';
 import { daysUntil } from '../lib/dates';
 import { cleanText } from '../lib/sanitize';
+import { getEvaluatedScholarships } from '../lib/selectors';
+import { useToday } from '../lib/useToday';
 import { ScholarshipCard } from '../components/ScholarshipCard';
 import { Button, Empty, PageHead } from '../components/ui';
 import { SearchIcon } from '../components/icons';
@@ -14,11 +15,26 @@ interface Props {
   onOpenProfile: () => void;
 }
 
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'eligible', label: 'Eligible for me' },
+  { key: 'closing', label: 'Closing soon' },
+];
+
 export default function Discover({ onDetails, onOpenProfile }: Props) {
-  const { state, dispatch } = useApp();
+  const state = useAppState();
+  const { dispatch } = useAppActions();
+  const today = useToday();
+
+  const evaluated = useMemo(
+    () => getEvaluatedScholarships(state.profile, state.readyDocs),
+    [state.profile, state.readyDocs],
+  );
+  const eligibleCount = evaluated.filter((r) => r.evaluation.eligible).length;
 
   const items = useMemo(() => {
-    let ranked = rankScholarships(SCHOLARSHIPS, state.profile, state.readyDocs);
+    const now = new Date(`${today}T12:00:00+05:30`);
+    let ranked = evaluated;
     const q = state.query.trim().toLowerCase();
     if (q !== '') {
       ranked = ranked.filter(
@@ -28,20 +44,19 @@ export default function Discover({ onDetails, onOpenProfile }: Props) {
     if (state.filter === 'eligible') ranked = ranked.filter((r) => r.evaluation.eligible);
     if (state.filter === 'closing') {
       ranked = ranked.filter((r) => {
-        const d = daysUntil(r.scholarship.deadline);
+        const d = daysUntil(r.scholarship.deadline, now);
         return d >= 0 && d <= 14;
       });
     }
     if (state.sort === 'deadline') {
-      ranked = [...ranked].sort((a, b) => a.scholarship.deadline.localeCompare(b.scholarship.deadline));
+      ranked = [...ranked].sort((a, b) => {
+        const aClosed = daysUntil(a.scholarship.deadline, now) < 0 ? 1 : 0;
+        const bClosed = daysUntil(b.scholarship.deadline, now) < 0 ? 1 : 0;
+        return aClosed - bClosed || a.scholarship.deadline.localeCompare(b.scholarship.deadline) || a.scholarship.id - b.scholarship.id;
+      });
     }
     return ranked;
-  }, [state.profile, state.readyDocs, state.query, state.filter, state.sort]);
-
-  const eligibleCount = useMemo(
-    () => rankScholarships(SCHOLARSHIPS, state.profile, state.readyDocs).filter((r) => r.evaluation.eligible).length,
-    [state.profile, state.readyDocs],
-  );
+  }, [evaluated, state.query, state.filter, state.sort, today]);
 
   return (
     <>
@@ -60,9 +75,7 @@ export default function Discover({ onDetails, onOpenProfile }: Props) {
             </small>
           </div>
         </div>
-        <Button small onClick={onOpenProfile}>
-          Edit profile
-        </Button>
+        <Button small onClick={onOpenProfile}>Edit profile</Button>
       </div>
 
       <div className="filters" role="group" aria-label="Search and filters">
@@ -76,22 +89,20 @@ export default function Discover({ onDetails, onOpenProfile }: Props) {
             onChange={(e) => dispatch({ type: 'set-query', query: cleanText(e.target.value, 80) })}
           />
         </div>
-        <label className="visually-hidden" htmlFor="filter-select">
-          Filter scholarships
-        </label>
-        <select
-          id="filter-select"
-          className="control"
-          value={state.filter}
-          onChange={(e) => dispatch({ type: 'set-filter', filter: e.target.value as Filter })}
-        >
-          <option value="all">All opportunities</option>
-          <option value="eligible">Eligible for me</option>
-          <option value="closing">Closing soon</option>
-        </select>
-        <label className="visually-hidden" htmlFor="sort-select">
-          Sort scholarships
-        </label>
+        <div className="filter-pills" role="group" aria-label="Filter scholarships">
+          {FILTERS.map((filter) => (
+            <button
+              key={filter.key}
+              type="button"
+              className={`chip ${state.filter === filter.key ? 'is-active' : ''}`}
+              aria-pressed={state.filter === filter.key}
+              onClick={() => dispatch({ type: 'set-filter', filter: filter.key })}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+        <label className="visually-hidden" htmlFor="sort-select">Sort scholarships</label>
         <select
           id="sort-select"
           className="control"
@@ -99,12 +110,12 @@ export default function Discover({ onDetails, onOpenProfile }: Props) {
           onChange={(e) => dispatch({ type: 'set-sort', sort: e.target.value as SortKey })}
         >
           <option value="best">Best match</option>
-          <option value="deadline">Earliest deadline</option>
+          <option value="deadline">Earliest open deadline</option>
         </select>
       </div>
 
       <p className="result-note" role="status" aria-live="polite">
-        {eligibleCount} strong matches found — we explain every score so you can apply with confidence.
+        Showing {items.length} of {SCHOLARSHIPS.length} opportunities · {eligibleCount} eligible for your profile.
       </p>
 
       <div className="card-list">

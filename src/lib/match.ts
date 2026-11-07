@@ -1,11 +1,10 @@
-import type { Evaluation, Profile, Scholarship } from '../types';
-import { NO_CAP } from '../data/scholarships';
+import type { DocumentId, Evaluation, Profile, Scholarship } from '../types';
 
 /**
  * Weighted, explainable matching rubric (max 100 pts).
  * Every point bucket is reported back to the user so matches are never a black box.
  */
-export function evaluate(scholarship: Scholarship, profile: Profile, readyDocs: readonly string[]): Evaluation {
+export function evaluate(scholarship: Scholarship, profile: Profile, readyDocs: readonly DocumentId[]): Evaluation {
   let score = 0;
   const reasons: string[] = [];
   const gaps: string[] = [];
@@ -24,9 +23,9 @@ export function evaluate(scholarship: Scholarship, profile: Profile, readyDocs: 
     gaps.push(`reserved for ${scholarship.categories.join('/')} categories`);
   }
 
-  if (profile.income <= scholarship.incomeCap) {
+  if (scholarship.incomeCap === null || profile.income <= scholarship.incomeCap) {
     score += 20;
-    if (scholarship.incomeCap < NO_CAP) reasons.push('family income fits the limit');
+    if (scholarship.incomeCap !== null) reasons.push('family income fits the limit');
   } else {
     gaps.push('income exceeds the published cap');
   }
@@ -74,14 +73,16 @@ export interface RankedScholarship {
 export function rankScholarships(
   list: readonly Scholarship[],
   profile: Profile,
-  readyDocs: readonly string[],
+  readyDocs: readonly DocumentId[],
 ): RankedScholarship[] {
   return list
     .map((scholarship) => ({ scholarship, evaluation: evaluate(scholarship, profile, readyDocs) }))
     .sort(
       (a, b) =>
         Number(b.evaluation.eligible) - Number(a.evaluation.eligible) ||
-        b.evaluation.score - a.evaluation.score ||
-        b.evaluation.docCompletion - a.evaluation.docCompletion,
+        b.evaluation.score - Number(a.evaluation.score) ||
+        b.evaluation.docCompletion - a.evaluation.docCompletion ||
+        a.scholarship.deadline.localeCompare(b.scholarship.deadline) ||
+        a.scholarship.id - b.scholarship.id,
     );
 }
