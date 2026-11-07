@@ -22,7 +22,7 @@ export default defineConfig({
     allowedHosts: previewHosts,
   },
   build: {
-    target: 'es2020',
+    target: 'es2022',
     cssCodeSplit: true,
     reportCompressedSize: false,
     sourcemap: false,
@@ -30,13 +30,15 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     restoreMocks: true,
     coverage: {
       provider: 'v8',
-      include: ['src/lib/**/*.ts', 'src/state/**/*.ts'],
+      include: ['src/lib/**/*.ts', 'src/state/**/*.ts', 'src/services/**/*.ts'],
       exclude: ['**/*.test.*', '**/*.d.ts'],
+      thresholds: { statements: 80, lines: 85, functions: 75, branches: 75 },
     },
   },
 });

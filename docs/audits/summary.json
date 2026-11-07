@@ -1,0 +1,22 @@
+{
+  "url": "http://127.0.0.1:4173/",
+  "date": "2026-11-07T13:17:45.162Z",
+  "scores": {
+    "performance": 100,
+    "accessibility": 100,
+    "best-practices": 100,
+    "seo": 100
+  },
+  "metrics": {
+    "largest-contentful-paint": 1507.497,
+    "cumulative-layout-shift": 0,
+    "total-blocking-time": 55
+  },
+  "thresholds": {
+    "performance": 90,
+    "accessibility": 95,
+    "best-practices": 95,
+    "seo": 95
+  },
+  "note": "Local production-build mobile audit. Not the external evaluator score."
+}

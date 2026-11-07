@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAppActions, useAppState } from '../state/AppState';
 import { answer } from '../lib/assistant';
 import { cleanText } from '../lib/sanitize';
-import { SCHOLARSHIPS } from '../data/scholarships';
+import { useCatalog } from '../state/CatalogContext';
 import { Button, PageHead } from '../components/ui';
 import { SendIcon, SparkIcon } from '../components/icons';
 import type { ChatMessage } from '../types';
@@ -12,18 +12,18 @@ const SUGGESTIONS = [
   'What is the next deadline?',
   'Which documents am I missing?',
   'Help me write my statement of purpose',
-  'Tell me about Reliance Foundation',
+  'Tell me about AICTE Pragati',
   'Tips to improve my chances',
 ];
 
 export default function Assistant({ onDetails }: { onDetails: (id: number) => void }) {
   const state = useAppState();
-  const { notify } = useAppActions();
+  const { notify } = useAppActions(); const { scholarships } = useCatalog();
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 0,
       role: 'assistant',
-      text: `Hi ${state.profile.name.split(' ')[0] ?? 'there'} — I’m Grant, your on-device funding assistant. I analyse your matches, deadlines, and documents locally: nothing you type ever leaves this browser.`,
+      text: `Hi ${state.profile.name.split(' ')[0] ?? 'there'} — I’m Grant, your on-device planning guide. I use a deterministic intent engine, not a generative AI service. Nothing you type leaves this browser.`,
     },
   ]);
   const [draft, setDraft] = useState('');
@@ -60,7 +60,7 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
   const ask = (question: string): void => {
     const cleaned = cleanText(question, 300);
     if (cleaned.trim() === '') return;
-    const reply = answer(cleaned, state);
+    const reply = answer(cleaned, state, scholarships);
     const userId = nextId.current++;
     const assistantId = nextId.current++;
     setMessages((m) => [
@@ -80,7 +80,7 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
     <>
       <PageHead
         eyebrow="On-device intelligence"
-        title="Meet Grant, your funding assistant."
+        title="Meet Grant, your planning assistant."
         actions={<span className="ai-badge"><SparkIcon /> Private by design</span>}
       >
         Ask about scholarships, deadlines, and documents — answers are computed locally from your profile.
@@ -100,7 +100,7 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
                 {m.related !== undefined && m.related.length > 0 && (
                   <div className="bubble-chips">
                     {m.related.map((id) => {
-                      const s = SCHOLARSHIPS.find((x) => x.id === id);
+                      const s = scholarships.find((x) => x.id === id);
                       return s === undefined ? null : (
                         <button key={id} type="button" className="chip" onClick={() => onDetails(id)}>
                           {s.name}

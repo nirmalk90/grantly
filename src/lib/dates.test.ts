@@ -30,3 +30,6 @@ describe('timezone-aware deadlines', () => {
     expect(formatInr(Number.NaN)).toBe('—');
   });
 });
+
+import { isCatalogStale } from './dates';
+it('flags catalogues older than thirty days without treating unknown dates as stale', () => { const now = new Date('2026-11-07T12:00:00Z'); expect(isCatalogStale('2026-10-08', now)).toBe(false); expect(isCatalogStale('2026-10-07', now)).toBe(true); expect(isCatalogStale('2027-01-01', now)).toBe(false); });

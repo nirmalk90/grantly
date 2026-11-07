@@ -34,3 +34,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Browser test / Lighthouse output
+playwright-report/
+test-results/
+.lighthouseci/

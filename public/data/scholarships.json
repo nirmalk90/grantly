@@ -1,0 +1,659 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-11-07",
+  "timezone": "Asia/Kolkata",
+  "scholarships": [
+    {
+      "id": 1,
+      "slug": "pm-usp-csss",
+      "name": "PM-USP Central Sector Scholarship (CSSS)",
+      "org": "Department of Higher Education",
+      "initials": "HE",
+      "amount": 12000,
+      "awardLabel": "₹12,000/year UG; ₹20,000/year PG",
+      "fundingType": "grant",
+      "incomeCap": 450000,
+      "levels": [
+        "UG",
+        "PG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "renewal",
+      "deadline": null,
+      "opensAt": null,
+      "deadlineNote": "Official NSP pages conflict: the home/student pages say 31 October 2026 while the directory says 30 November 2026. Renewal only. No deadline is shown until confirmed.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Class 12 marksheet",
+        "Previous scholarship details"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "PM-USP Central Sector Scholarship (CSSS) — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Above the 80th percentile in the relevant Class 12 board stream; percentage marks alone do not establish eligibility.",
+        "Regular recognised degree course; renewal requires the published marks and attendance conditions."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/CSSS_GUIDLINES_07022024_updated.pdf",
+      "verifiedAt": "2026-11-07",
+      "requiresAbove80Percentile": true
+    },
+    {
+      "id": 2,
+      "slug": "aicte-pragati-degree",
+      "name": "AICTE Pragati — Technical Degree",
+      "org": "AICTE",
+      "initials": "AI",
+      "amount": 50000,
+      "awardLabel": "₹50,000/year",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "UG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Fee receipt"
+      ],
+      "kind": "Women in technology",
+      "tone": "violet",
+      "about": "AICTE Pragati — Technical Degree — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "First year, or second year through lateral entry, in an AICTE-approved technical degree.",
+        "Maximum two girls per family; selection is merit-based and subject to available slots."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/AICTE/AICTE_2010_G.pdf",
+      "verifiedAt": "2026-11-07",
+      "gender": "F"
+    },
+    {
+      "id": 3,
+      "slug": "aicte-pragati-diploma",
+      "name": "AICTE Pragati — Technical Diploma",
+      "org": "AICTE",
+      "initials": "AI",
+      "amount": 50000,
+      "awardLabel": "₹50,000/year",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "Diploma"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Fee receipt"
+      ],
+      "kind": "Women in technology",
+      "tone": "violet",
+      "about": "AICTE Pragati — Technical Diploma — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "First year or lateral entry in an AICTE-approved technical diploma.",
+        "Maximum two girls per family; confirm the current diploma guidelines."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/AICTE/AICTE_2011_G.pdf",
+      "verifiedAt": "2026-11-07",
+      "gender": "F"
+    },
+    {
+      "id": 4,
+      "slug": "aicte-saksham-degree",
+      "name": "AICTE Saksham — Technical Degree",
+      "org": "AICTE",
+      "initials": "AI",
+      "amount": 50000,
+      "awardLabel": "₹50,000/year",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "UG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Disability certificate",
+        "UDID card"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "AICTE Saksham — Technical Degree — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Benchmark disability of at least 40% and an AICTE-approved technical degree.",
+        "Confirm admission year and lateral-entry conditions in the scheme guidelines."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/AICTE/AICTE_2012_G.pdf",
+      "verifiedAt": "2026-11-07",
+      "requiresDisability": true
+    },
+    {
+      "id": 5,
+      "slug": "aicte-saksham-diploma",
+      "name": "AICTE Saksham — Technical Diploma",
+      "org": "AICTE",
+      "initials": "AI",
+      "amount": 50000,
+      "awardLabel": "₹50,000/year",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "Diploma"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Disability certificate",
+        "UDID card"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "AICTE Saksham — Technical Diploma — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Benchmark disability of at least 40% and an AICTE-approved technical diploma."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/AICTE/AICTE_2013_G.pdf",
+      "verifiedAt": "2026-11-07",
+      "requiresDisability": true
+    },
+    {
+      "id": 6,
+      "slug": "aicte-swanath-degree",
+      "name": "AICTE Swanath — Technical Degree",
+      "org": "AICTE",
+      "initials": "AI",
+      "amount": 50000,
+      "awardLabel": "₹50,000/year",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "UG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Category certificate"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "AICTE Swanath — Technical Degree — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Eligible orphan, single-parent, armed-forces/CAPF/paramilitary martyr or other notified vulnerable category.",
+        "Confirm the qualifying category and approved institution in the current guidelines."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/AICTE_3039_G.pdf",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": 7,
+      "slug": "aicte-swanath-diploma",
+      "name": "AICTE Swanath — Technical Diploma",
+      "org": "AICTE",
+      "initials": "AI",
+      "amount": 50000,
+      "awardLabel": "₹50,000/year",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "Diploma"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Category certificate"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "AICTE Swanath — Technical Diploma — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Meet a notified Swanath vulnerable-category condition and attend an approved technical diploma."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/AICTE_3038_G.pdf",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": 8,
+      "slug": "ugc-postgraduate",
+      "name": "National Scholarship for Postgraduate Studies",
+      "org": "UGC",
+      "initials": "UG",
+      "amount": 150000,
+      "awardLabel": "₹15,000/month for 10 months/year",
+      "fundingType": "grant",
+      "incomeCap": null,
+      "levels": [
+        "PG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-09-16",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Graduation certificate",
+        "Institution verification"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "National Scholarship for Postgraduate Studies — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "First regular/full-time PG degree, first year, below age 30 at admission.",
+        "Eligible accredited institution; merit selection and reservation rules apply."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/Guidelines_NATIONAL_SCHOLARSHIP_FOR_POSTGRADUATE_STUDIES_UGC_2324.pdf",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": 9,
+      "slug": "yasasvi-top-class-college",
+      "name": "PM YASASVI Top Class Education in College",
+      "org": "Ministry of Social Justice",
+      "initials": "SJ",
+      "amount": null,
+      "awardLabel": "Tuition + living and study allowances",
+      "fundingType": "grant",
+      "incomeCap": 250000,
+      "levels": [
+        "UG",
+        "PG"
+      ],
+      "categories": [
+        "OBC",
+        "EBC",
+        "DNT"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": null,
+      "opensAt": null,
+      "deadlineNote": "Official NSP pages conflict: the home/student pages say 31 October 2026 while the directory says 30 November 2026. Renewal only. No deadline is shown until confirmed.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Category certificate",
+        "Fee receipt"
+      ],
+      "kind": "Government scholarship",
+      "tone": "violet",
+      "about": "PM YASASVI Top Class Education in College — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Admission to a notified institution and full-time prescribed course.",
+        "Institution-specific slots, sibling limits and inter-se merit apply."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/ApprovedmodifieddraftofTopClassCollege.pdf",
+      "verifiedAt": "2026-11-07",
+      "requiresAbove80Percentile": true
+    },
+    {
+      "id": 10,
+      "slug": "top-class-sc",
+      "name": "Top Class Education for SC Students",
+      "org": "Ministry of Social Justice",
+      "initials": "SJ",
+      "amount": null,
+      "awardLabel": "Tuition + academic allowance",
+      "fundingType": "grant",
+      "incomeCap": 800000,
+      "levels": [
+        "UG",
+        "PG",
+        "Diploma"
+      ],
+      "categories": [
+        "SC"
+      ],
+      "minMarks": null,
+      "state": "NER",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Caste certificate",
+        "Fee receipt"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "Top Class Education for SC Students — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Admission to a notified institution; fresh awards are for first-year students.",
+        "The linked guidelines cover 2025–26; confirm continuation and current institution list before applying."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/Top_Class_Education_Scheme_2018.pdf",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": 11,
+      "slug": "post-matric-disability",
+      "name": "Post-Matric Scholarship for Students with Disabilities",
+      "org": "Department of Empowerment of Persons with Disabilities",
+      "initials": "PD",
+      "amount": null,
+      "awardLabel": "Maintenance + course fees; see schedule",
+      "fundingType": "grant",
+      "incomeCap": 250000,
+      "levels": [
+        "UG",
+        "PG",
+        "Diploma"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Income certificate",
+        "Disability certificate",
+        "UDID card"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "Post-Matric Scholarship for Students with Disabilities — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "Indian national with at least 40% benchmark disability, valid certificate and UDID.",
+        "Recognised post-matric course; no concurrent scholarship or stipend."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/DEPDGuidelines_1.pdf",
+      "verifiedAt": "2026-11-07",
+      "requiresDisability": true
+    },
+    {
+      "id": 12,
+      "slug": "ishan-uday",
+      "name": "Ishan Uday — Special Scholarship for NER",
+      "org": "UGC",
+      "initials": "NE",
+      "amount": 80000,
+      "awardLabel": "₹8,000/month for 10 months/year",
+      "fundingType": "grant",
+      "incomeCap": 450000,
+      "levels": [
+        "UG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "NER",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-09-16",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Class 12 marksheet",
+        "Residence certificate",
+        "Income certificate"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "Ishan Uday — Special Scholarship for NER — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "NER domicile and Class 12 from a school in the North Eastern Region.",
+        "First year of a first regular UG degree at an eligible institution; not management quota."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/Guidelines_ISHAN%20UDAY_2324.pdf",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": 13,
+      "slug": "st-higher-education",
+      "name": "National Scholarship for Higher Education of ST Students",
+      "org": "Ministry of Tribal Affairs",
+      "initials": "TR",
+      "amount": null,
+      "awardLabel": "See current institute and course schedule",
+      "fundingType": "grant",
+      "incomeCap": null,
+      "levels": [
+        "UG",
+        "PG"
+      ],
+      "categories": [
+        "ST"
+      ],
+      "minMarks": null,
+      "state": "All",
+      "applicationType": "both",
+      "deadline": "2026-11-30",
+      "opensAt": "2026-06-01",
+      "deadlineNote": "Published student deadline for the 2026–27 cycle; confirm extensions on NSP.",
+      "docs": [
+        "Aadhaar",
+        "Marksheet",
+        "Admission letter",
+        "Bank passbook",
+        "Caste certificate",
+        "Income certificate",
+        "Institution verification"
+      ],
+      "kind": "Government scholarship",
+      "tone": "green",
+      "about": "National Scholarship for Higher Education of ST Students — verify the complete scheme conditions and current application window on the official source.",
+      "conditions": [
+        "ST category and admission to an eligible notified institution/course.",
+        "Confirm income, course and renewal conditions in the current guidelines."
+      ],
+      "applyUrl": "https://scholarships.gov.in/ApplicationForm/",
+      "sourceUrl": "https://scholarships.gov.in/All-Scholarships",
+      "guidelinesUrl": "https://scholarships.gov.in/public/schemeGuidelines/tribalfellowshipguideline.pdf",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": 14,
+      "slug": "bihar-kanya-utthan",
+      "name": "Mukhyamantri Kanya Utthan — Graduation",
+      "org": "Government of Bihar",
+      "initials": "BR",
+      "amount": 50000,
+      "awardLabel": "₹50,000 one-time graduation benefit",
+      "fundingType": "grant",
+      "incomeCap": null,
+      "levels": [
+        "UG"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "Bihar",
+      "applicationType": "both",
+      "deadline": null,
+      "opensAt": null,
+      "deadlineNote": "Batch-specific window. No closing date was verified on the official landing page.",
+      "docs": [
+        "Aadhaar",
+        "Graduation certificate",
+        "Residence certificate",
+        "Bank passbook"
+      ],
+      "kind": "State programme",
+      "tone": "amber",
+      "about": "Bihar graduation incentive for women. The official Medhasoft portal publishes eligible result batches and registration links.",
+      "conditions": [
+        "Woman graduate from a recognised Bihar university; the current portal lists final results published between 2022–25.",
+        "Confirm marital-status, family and bank-account conditions on the official portal."
+      ],
+      "applyUrl": "https://medhasoft.bihar.gov.in/",
+      "sourceUrl": "https://medhasoft.bihar.gov.in/",
+      "guidelinesUrl": null,
+      "verifiedAt": "2026-11-07",
+      "gender": "F"
+    },
+    {
+      "id": 15,
+      "slug": "bihar-student-credit-card",
+      "name": "Bihar Student Credit Card",
+      "org": "Government of Bihar",
+      "initials": "BR",
+      "amount": 400000,
+      "awardLabel": "Education loan up to ₹4 lakh — repayable",
+      "fundingType": "loan",
+      "incomeCap": null,
+      "levels": [
+        "UG",
+        "PG",
+        "Diploma"
+      ],
+      "categories": [
+        "All"
+      ],
+      "minMarks": null,
+      "state": "Bihar",
+      "applicationType": "both",
+      "deadline": null,
+      "opensAt": null,
+      "deadlineNote": "Check the current student portal and DRCC instructions; no fixed closing date is asserted.",
+      "docs": [
+        "Aadhaar",
+        "Class 12 marksheet",
+        "Residence certificate",
+        "Admission letter",
+        "Bank passbook"
+      ],
+      "kind": "Education loan",
+      "tone": "amber",
+      "about": "Education financing for eligible Bihar students. The official portal links to the BSEFC student portal and approved college list.",
+      "conditions": [
+        "Bihar residence, Class 12 qualification and an approved course/institution.",
+        "This is a loan, not a grant. Confirm current interest, repayment and DRCC verification requirements."
+      ],
+      "applyUrl": "https://www.bsefcl.bihar.gov.in/",
+      "sourceUrl": "https://www.7nishchay-yuvaupmission.bihar.gov.in/",
+      "guidelinesUrl": null,
+      "verifiedAt": "2026-11-07"
+    }
+  ]
+}

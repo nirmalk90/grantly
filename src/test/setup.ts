@@ -1,13 +1,17 @@
+import 'fake-indexeddb/auto';
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+vi.mock('../services/catalog', async (importOriginal) => ({ ...await importOriginal<typeof import('../services/catalog')>(), catalogRepository: { load: async () => (await import("./fixtures")).testCatalog } }));
 
 document.documentElement.lang = 'en';
 
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
-  document.documentElement.dataset.theme = 'dark';
+  vi.restoreAllMocks();
+  document.documentElement.dataset.theme = 'light'
+  window.history.replaceState({}, '', '/');;
   document.body.style.overflow = '';
 });
 

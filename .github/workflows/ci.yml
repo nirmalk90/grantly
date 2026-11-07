@@ -1,47 +1,50 @@
 name: CI Quality Gates
-
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, 'arena/**']
   pull_request:
     branches: [main, master]
-
 permissions:
   contents: read
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   verify:
-    name: Lint, Typecheck, Test, Audit & Build
+    name: Product, accessibility and performance gates
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Run TypeScript typecheck
-        run: npm run typecheck
-
-      - name: Run unit/component tests with coverage
-        run: npm run test:coverage
-
-      - name: Audit dependencies
-        run: npm audit --audit-level=moderate
-
-      - name: Build production bundle
-        run: npm run build
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run validate:data
+      - run: npm run test:coverage
+      - run: npm audit --audit-level=moderate
+      - run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile workflows + axe
+        run: npm run test:e2e
+      - name: Start production preview
+        run: nohup npm run preview -- --port 4174 > /tmp/grantly-preview.log 2>&1 &
+      - name: Wait for production preview
+        run: node -e "const deadline=Date.now()+30000; async function check(){try{const r=await fetch('http://127.0.0.1:4174');if(r.ok)return}catch{}if(Date.now()>deadline)process.exit(1);setTimeout(check,250)}check()"
+      - name: Mobile Lighthouse budgets
+        run: AUDIT_URL=http://127.0.0.1:4174/ npm run test:lighthouse
+      - name: Preserve audit evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-audit-evidence
+          path: |
+            coverage/
+            playwright-report/
+            test-results/
+            docs/audits/
+          retention-days: 7

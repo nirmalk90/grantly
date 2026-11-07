@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAppActions, useAppState } from '../state/AppState';
 import { cleanText } from '../lib/sanitize';
-import { SCHOLARSHIPS } from '../data/scholarships';
+import { useCatalog } from '../state/CatalogContext';
+import { useNavigate } from 'react-router-dom';
+import { PAGE_PATHS } from '../lib/pages';
 import type { Page } from '../types';
 import { PAGE_LABELS } from '../lib/pages';
 import { SearchIcon } from './icons';
@@ -25,7 +27,7 @@ const PAGES: Page[] = ['overview', 'discover', 'assistant', 'applications', 'dea
 
 export function CommandPalette({ open, onClose, onOpenProfile, onOpenGuide }: Props) {
   const state = useAppState();
-  const { dispatch, notify, clearSavedData } = useAppActions();
+  const { dispatch, notify } = useAppActions(); const { scholarships } = useCatalog(); const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -36,7 +38,7 @@ export function CommandPalette({ open, onClose, onOpenProfile, onOpenGuide }: Pr
       id: `page-${page}`,
       label: `Go to ${PAGE_LABELS[page]}`,
       hint: 'Navigate',
-      run: () => dispatch({ type: 'navigate', page }),
+      run: () => navigate(PAGE_PATHS[page]),
     }));
     const actions: PaletteItem[] = [
       { id: 'profile', label: 'Edit my student profile', hint: 'Profile', run: onOpenProfile },
@@ -49,24 +51,15 @@ export function CommandPalette({ open, onClose, onOpenProfile, onOpenGuide }: Pr
       },
       {
         id: 'load-demo',
-        label: 'Load demo student preset (sample profile & pipeline)',
-        hint: 'Demo',
+        label: 'Try a demo (replaces your local planner)',
+        hint: 'Profile',
         run: () => {
           dispatch({ type: 'load-demo' });
           notify('Loaded demo student profile & pipeline');
         },
       },
-      {
-        id: 'reset-demo',
-        label: 'Reset data to initial default state',
-        hint: 'Demo',
-        run: () => {
-          dispatch({ type: 'reset-demo' });
-          notify('Reset to default initial state');
-        },
-      },
-      { id: 'clear-data', label: 'Clear saved profile, tracker and checklist', hint: 'Privacy', run: clearSavedData },
-      ...SCHOLARSHIPS.filter((s) => state.tracking[s.id] === undefined).map((s) => ({
+      { id: 'privacy', label: 'Back up or clear saved data', hint: 'Privacy', run: onOpenProfile },
+      ...scholarships.filter((s) => state.tracking[s.id] === undefined).map((s) => ({
         id: `save-${s.id}`,
         label: `Save “${s.name}”`,
         hint: 'Track',
@@ -79,7 +72,7 @@ export function CommandPalette({ open, onClose, onOpenProfile, onOpenGuide }: Pr
     const all = [...nav, ...actions];
     const q = query.trim().toLowerCase();
     return q === '' ? all.slice(0, 9) : all.filter((i) => i.label.toLowerCase().includes(q)).slice(0, 9);
-  }, [query, state.theme, state.tracking, dispatch, notify, clearSavedData, onOpenProfile, onOpenGuide]);
+  }, [query, state.theme, state.tracking, scholarships, dispatch, notify, navigate, onOpenProfile, onOpenGuide]);
 
   const activeId = items[active]?.id;
 
