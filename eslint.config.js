@@ -6,7 +6,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage'] },
+  { ignores: ['dist', 'node_modules', 'coverage', 'playwright-report', 'test-results'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.strict],
     files: ['**/*.{ts,tsx}'],
@@ -27,7 +27,7 @@ export default tseslint.config(
         'error',
         {
           allowConstantExport: true,
-          allowExportNames: ['useApp', 'useAppState', 'useAppActions', 'useToast'],
+          allowExportNames: ['useApp', 'useAppState', 'useAppActions', 'useToast', 'useCatalog'],
         },
       ],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

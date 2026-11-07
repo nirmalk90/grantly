@@ -1,171 +1,39 @@
-import { SCHOLARSHIPS } from '../data/scholarships';
 import { evaluate, rankScholarships } from './match';
-import { daysUntil, deadlineLabel, formatDate, formatInr } from './dates';
+import { daysUntil, deadlineLabel, formatDate } from './dates';
 import type { AppState, DocumentId, Scholarship } from '../types';
-
-export interface AssistantReply {
-  text: string;
-  related?: number[];
-  followUps: string[];
-}
-
-const DEFAULT_FOLLOW_UPS = [
-  'What am I eligible for?',
-  'What is the next deadline?',
-  'Which documents am I missing?',
-  'Help me write my statement of purpose',
-];
-
-function sentenceList(items: string[]): string {
-  if (items.length <= 1) return items.join('');
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1] ?? ''}`;
-}
-
-function eligibleList(state: AppState): Scholarship[] {
-  return SCHOLARSHIPS.filter((s) => evaluate(s, state.profile, state.readyDocs).eligible);
-}
-
-function missingDocsFor(state: AppState): Map<DocumentId, number> {
-  const missing = new Map<DocumentId, number>();
-  for (const s of eligibleList(state)) {
-    for (const doc of s.docs) {
-      if (!state.readyDocs.includes(doc)) missing.set(doc, (missing.get(doc) ?? 0) + 1);
-    }
-  }
-  return missing;
-}
-
-function findScheme(question: string): Scholarship | undefined {
-  return SCHOLARSHIPS.find(
-    (s) => question.includes(s.name.toLowerCase()) || question.includes(s.org.toLowerCase()),
-  );
-}
-
-function buildSop(state: AppState, targetSchemeName?: string): string {
+export interface AssistantReply { text: string; related?: number[]; followUps: string[] }
+const FOLLOW_UPS = ['What am I eligible for?', 'What is the next deadline?', 'Which documents am I missing?', 'Help me write my statement of purpose'];
+const list = (items: string[]): string => items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+function buildSop(state: AppState, target = 'this scholarship opportunity'): string {
   const p = state.profile;
-  const target = targetSchemeName ?? 'this scholarship opportunity';
-  return [
-    `Statement of Purpose Draft for ${p.name}:`,
-    `Target: ${target}`,
-    ``,
-    `Dear Selection Committee,`,
-    ``,
-    `I am writing to express my earnest application for ${target}. Currently pursuing my ${p.level} education from ${p.state}, my academic pursuit has been driven by a dedicated passion for ${p.interests || 'academic excellence and societal impact'}. Achieving ${p.marks}% in my previous examinations demonstrates my diligence and commitment to academic rigour.`,
-    ``,
-    `Coming from a family with an annual income of ${formatInr(p.income)}, educational financing represents a significant hurdle on my path. This support would alleviate the immediate burden of tuition and essential learning resources, empowering me to channel my full energy toward mastering my curriculum and building practical projects.`,
-    ``,
-    `Upon completing my degree, I intend to leverage my knowledge to give back by mentoring other students from similar backgrounds and contributing meaningfully to community innovation. Thank you for considering my application.`,
-    ``,
-    `Sincerely,`,
-    `${p.name}`,
-    ``,
-    '[Tip: Copy this draft into your word processor and customise it for the institution. Verify all claims before submitting.]',
-  ].join('\n');
+  return `Statement of purpose — working draft\nTarget: ${target}\n\nDear Selection Committee,\n\nI am applying for ${target} to support my ${p.level} studies${p.state ? ` in ${p.state}` : ''}. My interests include ${p.interests || '[describe your academic interests]'}. [Add a specific project or experience that shows your commitment.]\n\nThis scholarship would help me [explain the specific educational costs you need to cover]. My goal is to [describe a realistic academic or community outcome]. [Add evidence for these claims and tailor this paragraph to the provider’s mission.]\n\nThank you for considering my application.\n${p.name || '[Your name]'}\n\nBefore submitting: replace every bracketed prompt, verify all claims, and follow the provider’s word limit. This is a template, not a verified personal essay.`;
 }
-
-/** Deterministic, on-device intent engine — no network calls, no data leaves the browser. */
-export function answer(rawQuestion: string, state: AppState): AssistantReply {
+/** Deterministic, on-device intent engine. No network calls or invented eligibility decisions. */
+export function answer(rawQuestion: string, state: AppState, catalog: readonly Scholarship[], now = new Date()): AssistantReply {
   const q = rawQuestion.toLowerCase();
-  const eligible = eligibleList(state);
-  const matchedScheme = findScheme(q);
-  const wantsDraft = /essay|statement|purpose|sop|write|draft|letter|cover/.test(q);
-
-  if (/hello|hi\b|hey|greetings/.test(q)) {
-    return {
-      text: `Hi ${state.profile.name.split(' ')[0] ?? 'there'}! I am Grant, your on-device funding assistant. I can analyze your matches, calculate deadlines, pinpoint missing documents, and draft statements of purpose — all processed locally inside your browser.`,
-      followUps: DEFAULT_FOLLOW_UPS,
-    };
+  const ranked = rankScholarships(catalog, state.profile, state.readyDocs, now);
+  const eligible = ranked.filter((r) => r.evaluation.eligible).map((r) => r.scholarship);
+  const named = catalog.filter((s) => q.includes(s.name.toLowerCase()) || q.includes(s.slug.replaceAll('-', ' '))).sort((a,b) => b.name.length - a.name.length)[0];
+  const matched = named ?? catalog.find((s) => q.includes(s.org.toLowerCase()));
+  if (/hello|hi\b|hey|greetings/.test(q)) return { text: `Hi${state.profile.name ? ` ${state.profile.name.split(' ')[0]}` : ''}! I’m Grant, a deterministic on-device guide. I can screen your profile, explain published deadlines, find preparation gaps and help outline an essay. I do not submit applications or decide eligibility.`, followUps: FOLLOW_UPS };
+  if (/essay|statement|purpose|sop|write|draft|letter|cover/.test(q)) return { text: buildSop(state, matched?.name), related: matched ? [matched.id] : undefined, followUps: FOLLOW_UPS };
+  if (matched !== undefined) {
+    const ev = evaluate(matched, state.profile, state.readyDocs);
+    return { text: `${matched.name}\nAward: ${matched.awardLabel}${matched.fundingType === 'loan' ? ' (repayable loan)' : ''}\nDeadline: ${formatDate(matched.deadline).full} — ${deadlineLabel(daysUntil(matched.deadline, now))}\nScreening: ${ev.eligible ? 'Your basic profile criteria match; additional conditions still need verification.' : list([...ev.gaps, ...ev.unknowns]) || 'Review the official conditions.'}\nAdditional conditions: ${matched.conditions.join(' ')}\nSource checked: ${formatDate(matched.verifiedAt).full}. Confirm current details at ${matched.sourceUrl}`, related: [matched.id], followUps: [`Draft an SOP for ${matched.name}`, ...FOLLOW_UPS.slice(1)] };
   }
-
-  if (wantsDraft) {
-    return {
-      text: buildSop(state, matchedScheme?.name),
-      related: matchedScheme !== undefined ? [matchedScheme.id] : undefined,
-      followUps: ['Which documents am I missing?', 'What is the next deadline?', 'What am I eligible for?'],
-    };
-  }
-
-  if (matchedScheme !== undefined) {
-    const ev = evaluate(matchedScheme, state.profile, state.readyDocs);
-    const days = daysUntil(matchedScheme.deadline);
-    const status = ev.eligible
-      ? `You are eligible (${ev.score}% match)! Key criteria met: ${sentenceList(ev.reasons)}.`
-      : `You may face eligibility hurdles: ${sentenceList(ev.gaps)}.`;
-    return {
-      text: `About ${matchedScheme.name} (${matchedScheme.org}):\n• Award: ${matchedScheme.amount}\n• Deadline: ${formatDate(matchedScheme.deadline).full} (${deadlineLabel(days)})\n• Status: ${status}\n• Required documents: ${matchedScheme.docs.join(', ')} (${ev.docsReady}/${ev.docsRequired} marked ready in your vault).\n• This is illustrative demo data; confirm details on the official portal.`,
-      related: [matchedScheme.id],
-      followUps: [`Draft an SOP for ${matchedScheme.name}`, 'Which documents am I missing?', 'What is the next deadline?'],
-    };
-  }
-
   if (/deadline|due|closing|soon|when|urgent/.test(q)) {
-    const upcoming = [...eligible]
-      .filter((s) => daysUntil(s.deadline) >= 0)
-      .sort((a, b) => a.deadline.localeCompare(b.deadline))
-      .slice(0, 4);
-    if (upcoming.length === 0) {
-      return {
-        text: 'You have no eligible scholarships with open deadlines right now. Try widening your profile parameters or checking back later.',
-        followUps: DEFAULT_FOLLOW_UPS,
-      };
-    }
-    const lines = upcoming
-      .map((s) => `• ${s.name}: Closes ${formatDate(s.deadline).full} (${deadlineLabel(daysUntil(s.deadline))})`)
-      .join('\n');
-    return {
-      text: `Here are your earliest eligible deadlines:\n${lines}\nPrioritise applications closing within 14 days so you have ample time to verify and upload documents.`,
-      related: upcoming.map((s) => s.id),
-      followUps: ['Which documents am I missing?', 'Help me write my statement of purpose', 'What am I eligible for?'],
-    };
+    const upcoming = eligible.filter((s) => daysUntil(s.deadline, now) >= 0).sort((a, b) => (a.deadline ?? '').localeCompare(b.deadline ?? '')).slice(0, 4);
+    if (upcoming.length === 0) return { text: state.profile.complete ? 'No verified open deadline currently matches all your basic profile criteria. Unknown dates are not counted. Explore the catalogue and check official updates.' : 'Set up your profile first so I can screen deadlines. I only count published, unexpired dates; unknown dates need an official-source check.', followUps: FOLLOW_UPS };
+    return { text: `Earliest published deadlines matching your basic profile:\n${upcoming.map((s) => `• ${s.name}: ${formatDate(s.deadline).full} (${deadlineLabel(daysUntil(s.deadline, now))})`).join('\n')}\nConfirm cutoff times and extensions on the official portal.`, related: upcoming.map((s) => s.id), followUps: FOLLOW_UPS };
   }
-
   if (/document|missing|paper|certificate|vault|upload|aadhaar|income cert/.test(q)) {
-    const missing = missingDocsFor(state);
-    if (missing.size === 0) {
-      return {
-        text: `Great news! Every document required by your eligible scholarships is already marked ready in your Document Vault (${state.readyDocs.length} documents marked ready).`,
-        followUps: ['What is the next deadline?', 'Help me write my statement of purpose'],
-      };
-    }
-    const entries = [...missing.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-    const lines = entries.map(([doc, count]) => `• ${doc} — required by ${count} of your eligible schemes.`).join('\n');
-    return {
-      text: `To unlock your highest-priority applications, gather these documents next:\n${lines}\nCheck off each document in the Vault once obtained. Grantly tracks readiness; it does not verify or upload documents.`,
-      followUps: ['What is the next deadline?', 'What am I eligible for?'],
-    };
+    const missing = new Map<DocumentId, number>();
+    for (const s of eligible) for (const doc of s.docs) if (!state.readyDocs.includes(doc)) missing.set(doc, (missing.get(doc) ?? 0) + 1);
+    if (!state.profile.complete) return { text: 'Set up your profile to identify relevant preparation gaps. The Vault can hold local PDF, JPEG and PNG copies; it never uploads to a provider.', followUps: FOLLOW_UPS };
+    return { text: missing.size === 0 ? 'All documents in the planning checklists for your basic matches are marked ready. Check the official guidelines for the definitive upload list.' : `Prepare these next:\n${[...missing.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([doc, count]) => `• ${doc} — referenced by ${count} matching scheme${count === 1 ? '' : 's'}`).join('\n')}\nMarking ready is not verification. Keep originals and submit only through official portals.`, followUps: FOLLOW_UPS };
   }
-
-  if (/loan|money|amount|fund|worth|value|grant|income/.test(q)) {
-    return {
-      text: `You currently match ${eligible.length} schemes based on your profile, including family income of ${formatInr(state.profile.income)}. Award values and repayment terms vary by scheme; review each opportunity and confirm current details on its official portal.`,
-      followUps: DEFAULT_FOLLOW_UPS,
-    };
-  }
-
-  if (/tip|improve|chance|advice|help|guide/.test(q)) {
-    return {
-      text: `Top 3 recommendations to maximize your scholarship success:\n1. Apply early: Portals often slow down near deadlines due to server load.\n2. Verify certificates: Ensure names and dates on your documents match character-for-character.\n3. Track progress: Use the Kanban board in Grantly to track each application from Saved → In progress → Submitted.`,
-      followUps: ['What is the next deadline?', 'Which documents am I missing?'],
-    };
-  }
-
-  const ranked = rankScholarships(SCHOLARSHIPS, state.profile, state.readyDocs);
+  if (/tip|improve|chance|advice|help|guide/.test(q)) return { text: '1. Verify the current official guidelines and deadline.\n2. Check names and dates across your documents.\n3. Apply early and save the acknowledgement.\n4. Track institute verification after submission.\n5. Never pay an agent who guarantees an award or share passwords/OTPs.', followUps: FOLLOW_UPS };
+  if (!state.profile.complete) return { text: 'Start with your study level, category, state and income. I can then explain which basic criteria match and what still needs checking. The catalogue has official-source links for every opportunity.', related: ranked.slice(0, 3).map((r) => r.scholarship.id), followUps: FOLLOW_UPS };
   const top = ranked.filter((r) => r.evaluation.eligible).slice(0, 3);
-  if (top.length === 0) {
-    return {
-      text: `Based on your profile (${state.profile.level}, ${state.profile.category}, ${formatInr(state.profile.income)} income), no schemes match all mandatory criteria yet. The closest option is ${ranked[0]?.scholarship.name ?? '—'}: ${ranked[0]?.evaluation.gaps.join('; ') ?? ''}. You can update your profile to explore other categories.`,
-      followUps: DEFAULT_FOLLOW_UPS,
-    };
-  }
-  const lines = top
-    .map((r) => {
-      const ev = r.evaluation;
-      return `• ${r.scholarship.name} (${r.scholarship.amount}) — ${ev.score}% match (${sentenceList(ev.reasons)}). ${ev.docsRequired - ev.docsReady} document(s) still needed.`;
-    })
-    .join('\n');
-  return {
-    text: `Here are your top matched scholarships:\n${lines}`,
-    related: top.map((r) => r.scholarship.id),
-    followUps: ['What is the next deadline?', 'Which documents am I missing?', 'Help me write my statement of purpose'],
-  };
+  return { text: top.length === 0 ? 'No scheme matches all the basic criteria you supplied. Review the closest matches and their stated gaps; do not change accurate information just to obtain a match.' : `Your top basic profile matches:\n${top.map((r) => `• ${r.scholarship.name}: ${r.scholarship.awardLabel}. ${list(r.evaluation.reasons)}.`).join('\n')}\nInstitution, admission year and other conditions still apply. These are not award decisions.`, related: (top.length ? top : ranked.slice(0, 3)).map((r) => r.scholarship.id), followUps: FOLLOW_UPS };
 }

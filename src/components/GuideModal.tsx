@@ -1,6 +1,6 @@
 import { Modal } from './Modal';
 import { Button } from './ui';
-import { useApp } from '../state/AppState';
+import { useNavigate } from 'react-router-dom';
 
 const STEPS: { n: string; title: string; body: string }[] = [
   {
@@ -26,7 +26,7 @@ const STEPS: { n: string; title: string; body: string }[] = [
 ];
 
 export function GuideModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { dispatch } = useApp();
+  const navigate = useNavigate();
   return (
     <Modal open={open} titleId="guide-title" onClose={onClose}>
       <p className="eyebrow">Your simple playbook</p>
@@ -50,7 +50,7 @@ export function GuideModal({ open, onClose }: { open: boolean; onClose: () => vo
           variant="primary"
           onClick={() => {
             onClose();
-            dispatch({ type: 'navigate', page: 'discover' });
+            navigate('/discover');
           }}
         >
           Start discovering

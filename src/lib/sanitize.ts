@@ -1,8 +1,9 @@
 /** Clamp free-text input to a safe length and strip control characters. */
-export function cleanText(value: string, maxLength = 200): string {
+export function cleanText(value: string, maxLength = 200, preserveNewlines = false): string {
   const limit = Number.isFinite(maxLength) ? Math.max(0, Math.floor(maxLength)) : 200;
   // eslint-disable-next-line no-control-regex -- intentional: strip C0/C1 control characters from free text
-  return value.replace(/[\u0000-\u001F\u007F]/g, '').trimStart().slice(0, limit);
+  const stripped = preserveNewlines ? value.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, '') : value.replace(/[\u0000-\u001F\u007F]/g, '');
+  return stripped.trimStart().slice(0, limit);
 }
 
 export function isFiniteNumber(value: unknown): value is number {

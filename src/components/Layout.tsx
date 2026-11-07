@@ -1,142 +1,32 @@
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAppActions, useAppState } from '../state/AppState';
+import { PAGE_LABELS, PAGE_PATHS } from '../lib/pages';
 import type { Page } from '../types';
-import { PAGE_LABELS } from '../lib/pages';
-import {
-  BookIcon,
-  ClockIcon,
-  FileIcon,
-  GridIcon,
-  MoonIcon,
-  SearchIcon,
-  SparkIcon,
-  SunIcon,
-} from './icons';
-
-interface NavItem {
-  page: Page;
-  label: string;
-  icon: JSX.Element;
+import { BookIcon, ClockIcon, FileIcon, GridIcon, MoonIcon, SearchIcon, SparkIcon, SunIcon } from './icons';
+const ICONS: Record<Page, JSX.Element> = { overview: <GridIcon />, discover: <SearchIcon />, assistant: <SparkIcon />, applications: <BookIcon />, deadlines: <ClockIcon />, vault: <FileIcon /> };
+export function Sidebar({ onOpenGuide, onOpenProfile }: { onOpenGuide: () => void; onOpenProfile: () => void }) {
+  const state = useAppState(); const tracked = Object.keys(state.tracking).length;
+  return <aside className="sidebar">
+    <Link to="/" className="brand"><span className="brandmark" aria-hidden="true">g</span><span className="brand-text">grant<em>ly</em></span></Link>
+    <p className="side-label" id="nav-label">Your funding workspace</p>
+    <nav aria-labelledby="nav-label" className="nav">{(Object.keys(PAGE_LABELS) as Page[]).map((page) => <NavLink key={page} to={PAGE_PATHS[page]} end={page === 'overview'} className={({ isActive }) => isActive ? 'active' : ''} aria-label={page === 'applications' && tracked > 0 ? `${PAGE_LABELS[page]}, ${tracked} tracked` : PAGE_LABELS[page]}>
+      {ICONS[page]}<span>{PAGE_LABELS[page]}</span>{page === 'applications' && tracked > 0 && <span className="nav-count" aria-hidden="true">{tracked}</span>}
+    </NavLink>)}</nav>
+    <div className="side-bottom">
+      <button type="button" className="replay-journey" onClick={onOpenProfile}><span aria-hidden="true">◎</span> Profile & privacy</button>
+      <Link className="replay-journey" to="/tour"><span aria-hidden="true">✳</span> Explore the space tour</Link>
+      <div className="help-card"><strong>From discovery to funding</strong><p>A practical four-step application playbook.</p><button type="button" onClick={onOpenGuide}>Explore the guide</button></div>
+      <div className="user-chip"><span className="avatar" aria-hidden="true">{state.profile.name.charAt(0) || 'g'}</span><span className="user-meta"><strong>{state.profile.name || 'Your private workspace'}</strong><small>No account needed</small></span></div>
+    </div>
+  </aside>;
 }
-
-export function Sidebar({
-  onOpenGuide,
-  onReplayJourney,
-}: {
-  onOpenGuide: () => void;
-  onReplayJourney?: () => void;
-}) {
-  const state = useAppState();
-  const { dispatch, notify } = useAppActions();
-  const items: NavItem[] = [
-    { page: 'overview', label: PAGE_LABELS.overview, icon: <GridIcon /> },
-    { page: 'discover', label: PAGE_LABELS.discover, icon: <SearchIcon /> },
-    { page: 'assistant', label: PAGE_LABELS.assistant, icon: <SparkIcon /> },
-    { page: 'applications', label: PAGE_LABELS.applications, icon: <BookIcon /> },
-    { page: 'deadlines', label: PAGE_LABELS.deadlines, icon: <ClockIcon /> },
-    { page: 'vault', label: PAGE_LABELS.vault, icon: <FileIcon /> },
-  ];
-  const tracked = Object.keys(state.tracking).length;
-
-  return (
-    <aside className="sidebar">
-      <div className="brand">
-        <span className="brandmark" aria-hidden="true">g</span>
-        <span className="brand-text">grant<em>ly</em></span>
-      </div>
-      <p className="side-label" id="nav-label">Workspace</p>
-      <nav aria-labelledby="nav-label" className="nav">
-        {items.map((item) => {
-          const label = item.page === 'applications' && tracked > 0
-            ? `${item.label}, ${tracked} tracked`
-            : item.label;
-          return (
-            <button
-              key={item.page}
-              type="button"
-              className={state.page === item.page ? 'active' : ''}
-              aria-current={state.page === item.page ? 'page' : undefined}
-              aria-label={label}
-              onClick={() => dispatch({ type: 'navigate', page: item.page })}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-              {item.page === 'applications' && tracked > 0 && <span className="nav-count" aria-hidden="true">{tracked}</span>}
-            </button>
-          );
-        })}
-      </nav>
-      <div className="side-bottom">
-        {onReplayJourney && (
-          <button type="button" className="replay-journey" onClick={onReplayJourney}>
-            <span aria-hidden="true">✳</span> Replay the voyage
-          </button>
-        )}
-        <button
-          type="button"
-          className="replay-journey"
-          onClick={() => {
-            dispatch({ type: 'load-demo' });
-            notify('Loaded demo student profile & pipeline');
-          }}
-          title="Load pre-filled sample student profile and active pipeline"
-        >
-          <span aria-hidden="true">★</span> Load demo preset
-        </button>
-        <div className="help-card">
-          <strong>Application guide</strong>
-          <p>A calm four-step playbook from discovery to funding.</p>
-          <button type="button" onClick={onOpenGuide}>Explore the guide</button>
-        </div>
-        <div className="user-chip">
-          <span className="avatar" aria-hidden="true">{state.profile.name.charAt(0)}</span>
-          <span className="user-meta">
-            <strong>{state.profile.name}</strong>
-            <small>Local profile</small>
-          </span>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-export function Topbar({ onOpenPalette }: { onOpenPalette: () => void }) {
-  const state = useAppState();
-  const { dispatch } = useAppActions();
-  return (
-    <header className="topbar">
-      <p className="crumb">
-        Workspace <span aria-hidden="true">/</span> <strong>{PAGE_LABELS[state.page]}</strong>
-      </p>
-      <div className="top-actions">
-        <span className="tag tag-warn demo-tag">Demo data</span>
-        <button
-          type="button"
-          className="palette-hint"
-          onClick={onOpenPalette}
-          aria-label="Quick actions"
-          aria-keyshortcuts="Control+K Meta+K"
-        >
-          <SearchIcon />
-          <span>Quick actions</span>
-          <kbd aria-hidden="true">⌘K</kbd>
-        </button>
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label={state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-          onClick={() => dispatch({ type: 'toggle-theme' })}
-        >
-          {state.theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-        </button>
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Open deadline calendar"
-          onClick={() => dispatch({ type: 'navigate', page: 'deadlines' })}
-        >
-          <ClockIcon />
-        </button>
-      </div>
-    </header>
-  );
+export function Topbar({ onOpenPalette, onOpenProfile }: { onOpenPalette: () => void; onOpenProfile: () => void }) {
+  const state = useAppState(); const { dispatch } = useAppActions(); const { pathname } = useLocation();
+  const page = (Object.keys(PAGE_PATHS) as Page[]).find((p) => PAGE_PATHS[p] === pathname) ?? 'overview';
+  return <header className="topbar"><p className="crumb">Workspace <span aria-hidden="true">/</span> <strong>{PAGE_LABELS[page]}</strong></p><div className="top-actions">
+    <span className="tag local-tag">On-device</span><button type="button" className="icon-btn profile-top-btn" aria-label="Profile and privacy" onClick={onOpenProfile}>◎</button>
+    <button type="button" className="palette-hint" aria-label="Quick actions ⌘K" onClick={onOpenPalette} aria-keyshortcuts="Control+K Meta+K"><SearchIcon /><span>Quick actions</span><kbd aria-hidden="true">⌘K</kbd></button>
+    <button type="button" className="icon-btn" aria-label={state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} onClick={() => dispatch({ type: 'toggle-theme' })}>{state.theme === 'dark' ? <SunIcon /> : <MoonIcon />}</button>
+    <Link to="/deadlines" className="icon-btn" aria-label="Deadline calendar"><ClockIcon /></Link>
+  </div></header>;
 }

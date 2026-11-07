@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DOCUMENTS, SCHOLARSHIPS } from '../data/scholarships';
 import type { Universe } from './engine';
 import './journey.css';
 
@@ -262,8 +261,8 @@ export default function Journey({ onEnter }: JourneyProps) {
               <button type="button" className="cta-ghost" onClick={replay}>Replay the voyage</button>
             </div>
             <ul className="act-stats" aria-label="What waits inside">
-              <li><b>{SCHOLARSHIPS.length}</b> curated demo schemes</li>
-              <li><b>{DOCUMENTS.length}</b>-document checklist</li>
+              <li><b>Source-linked</b> scholarship discovery</li>
+              <li><b>Private</b> document checklist</li>
               <li><b>Local</b> application assistant</li>
             </ul>
           </div>
