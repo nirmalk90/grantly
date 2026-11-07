@@ -1,151 +1,108 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
-import type { ReactNode } from 'react';
-import type { Action, AppState, Stage } from '../types';
-import { isRecord } from '../lib/sanitize';
-import { DEFAULT_READY_DOCS, DEMO_PRESET } from '../data/scholarships';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
+import type { Dispatch, ReactNode } from 'react';
+import type { Action, AppState } from '../types';
+import { INITIAL_STATE } from './defaults';
+import { appReducer } from './reducer';
+import {
+  clearPersisted,
+  getStorageStatusSnapshot,
+  loadPersisted,
+  savePersisted,
+  subscribeStorageStatus,
+} from './storage';
 
-const STORAGE_KEY = 'grantly.v2';
-
-const initialState: AppState = {
-  page: 'overview',
-  profile: {
-    name: 'Aditya Kumar',
-    level: 'UG',
-    category: 'All',
-    income: 300_000,
-    marks: 82,
-    state: 'Bihar',
-    gender: 'F',
-    interests: 'computer science, AI, community work',
-  },
-  query: '',
-  filter: 'all',
-  sort: 'best',
-  tracking: {},
-  readyDocs: [...DEFAULT_READY_DOCS],
-  theme: 'dark',
-};
-
-function readPersisted(): Partial<AppState> {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw === null) return {};
-    const parsed: unknown = JSON.parse(raw);
-    if (!isRecord(parsed)) return {};
-    const out: Partial<AppState> = {};
-    if (isRecord(parsed.profile)) out.profile = { ...initialState.profile, ...parsed.profile };
-    if (isRecord(parsed.tracking)) out.tracking = parsed.tracking as AppState['tracking'];
-    if (Array.isArray(parsed.readyDocs) && parsed.readyDocs.every((d) => typeof d === 'string')) {
-      out.readyDocs = parsed.readyDocs;
-    }
-    if (parsed.theme === 'dark' || parsed.theme === 'light') out.theme = parsed.theme;
-    return out;
-  } catch {
-    return {};
-  }
+export interface Toast {
+  id: number;
+  message: string;
 }
 
-function reducer(state: AppState, action: Action): AppState {
-  switch (action.type) {
-    case 'navigate':
-      return { ...state, page: action.page };
-    case 'set-query':
-      return { ...state, query: action.query };
-    case 'set-filter':
-      return { ...state, filter: action.filter };
-    case 'set-sort':
-      return { ...state, sort: action.sort };
-    case 'set-profile':
-      return { ...state, profile: action.profile };
-    case 'track':
-      return state.tracking[action.id]
-        ? state
-        : { ...state, tracking: { ...state.tracking, [action.id]: 'saved' } };
-    case 'untrack':
-      return {
-        ...state,
-        tracking: Object.fromEntries(
-          Object.entries(state.tracking).filter(([id]) => Number(id) !== action.id),
-        ) as Record<number, Stage>,
-      };
-    case 'move':
-      return { ...state, tracking: { ...state.tracking, [action.id]: action.stage } };
-    case 'toggle-doc':
-      return {
-        ...state,
-        readyDocs: state.readyDocs.includes(action.doc)
-          ? state.readyDocs.filter((d) => d !== action.doc)
-          : [...state.readyDocs, action.doc],
-      };
-    case 'toggle-theme':
-      return { ...state, theme: state.theme === 'dark' ? 'light' : 'dark' };
-    case 'load-demo':
-      return {
-        ...state,
-        profile: { ...DEMO_PRESET.profile },
-        tracking: { ...DEMO_PRESET.tracking },
-        readyDocs: [...DEMO_PRESET.readyDocs],
-      };
-    case 'reset-demo':
-      return {
-        ...state,
-        profile: { ...initialState.profile },
-        tracking: {},
-        readyDocs: [...DEFAULT_READY_DOCS],
-        query: '',
-        filter: 'all',
-        sort: 'best',
-      };
-    default:
-      return state;
-  }
-}
-
-interface AppContextValue {
-  state: AppState;
-  dispatch: React.Dispatch<Action>;
+interface AppActions {
+  dispatch: Dispatch<Action>;
   notify: (message: string) => void;
-  toast: { id: number; message: string } | null;
+  storageStatus: ReturnType<typeof getStorageStatusSnapshot>;
+  clearSavedData: () => void;
 }
 
-const AppContext = createContext<AppContextValue | null>(null);
-
-let toastId = 0;
+const StateContext = createContext<AppState | null>(null);
+const ActionsContext = createContext<AppActions | null>(null);
+const ToastContext = createContext<Toast | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(
-    reducer,
-    initialState,
-    (base: AppState): AppState => ({ ...base, ...readPersisted(), page: 'overview' }),
+  const [loaded] = useState(loadPersisted);
+  const [state, dispatch] = useReducer(appReducer, INITIAL_STATE, (base): AppState => ({
+    ...base,
+    ...loaded.data,
+    page: 'overview',
+  }));
+  const storageStatus = useSyncExternalStore(
+    subscribeStorageStatus,
+    getStorageStatusSnapshot,
+    getStorageStatusSnapshot,
   );
-  const [toast, setToast] = useReducer(
-    (_: { id: number; message: string } | null, next: { id: number; message: string } | null) => next,
-    null,
-  );
+  const [toast, setToast] = useState<Toast | null>(null);
+  const toastTimer = useRef<number | null>(null);
+  const toastId = useRef(0);
 
   const notify = useCallback((message: string) => {
-    toastId += 1;
-    setToast({ id: toastId, message });
-    window.setTimeout(() => setToast(null), 2400);
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    toastId.current += 1;
+    setToast({ id: toastId.current, message });
+    toastTimer.current = window.setTimeout(() => {
+      setToast(null);
+      toastTimer.current = null;
+    }, 3500);
   }, []);
 
+  useEffect(() => () => {
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+  }, []);
+
+  const { profile, tracking, readyDocs, theme } = state;
   useEffect(() => {
-    const { profile, tracking, readyDocs, theme } = state;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ profile, tracking, readyDocs, theme }));
-    } catch {
-      /* storage may be unavailable; the app keeps working in memory */
-    }
+    savePersisted({ profile, tracking, readyDocs, theme });
+  }, [profile, tracking, readyDocs, theme]);
+
+  useEffect(() => {
     document.documentElement.dataset.theme = theme;
-  }, [state]);
+  }, [theme]);
 
-  const value = useMemo(() => ({ state, dispatch, notify, toast }), [state, notify, toast]);
+  const clearSavedData = useCallback(() => {
+    clearPersisted();
+    dispatch({ type: 'clear-data' });
+    notify('Saved profile, tracker and checklist cleared');
+  }, [notify]);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  const actions = useMemo<AppActions>(
+    () => ({ dispatch, notify, storageStatus, clearSavedData }),
+    [notify, storageStatus, clearSavedData],
+  );
+
+  return (
+    <StateContext.Provider value={state}>
+      <ActionsContext.Provider value={actions}>
+        <ToastContext.Provider value={toast}>{children}</ToastContext.Provider>
+      </ActionsContext.Provider>
+    </StateContext.Provider>
+  );
 }
 
-export function useApp(): AppContextValue {
-  const ctx = useContext(AppContext);
-  if (ctx === null) throw new Error('useApp must be used within AppProvider');
+export function useAppState(): AppState {
+  const ctx = useContext(StateContext);
+  if (ctx === null) throw new Error('useAppState must be used within AppProvider');
   return ctx;
+}
+
+export function useAppActions(): AppActions {
+  const ctx = useContext(ActionsContext);
+  if (ctx === null) throw new Error('useAppActions must be used within AppProvider');
+  return ctx;
+}
+
+export function useToast(): Toast | null {
+  return useContext(ToastContext);
+}
+
+/** Compatibility hook for consumers that genuinely need state, actions and toast. */
+export function useApp(): AppState & AppActions & { toast: Toast | null } {
+  return { ...useAppState(), ...useAppActions(), toast: useToast() };
 }

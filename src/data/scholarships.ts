@@ -1,12 +1,13 @@
-import type { Scholarship } from '../types';
+import type { DocumentId, Scholarship } from '../types';
+import { addDaysToIsoDate, todayKeyInTimeZone } from '../lib/dates';
 
-export const NO_CAP = 999_999_999;
+export const DATA_IS_DEMO = true;
+export const DATA_NOTICE =
+  'Illustrative demo data: deadlines are generated relative to today in Asia/Kolkata. Verify eligibility, amounts and dates on the official portal before applying.';
 
-/** Generates dynamic upcoming deadlines relative to evaluation date so demo is always live. */
+/** Generates dynamic upcoming demo deadlines in the scheme timezone. */
 function relativeDeadline(daysFromNow: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + daysFromNow);
-  return d.toISOString().slice(0, 10);
+  return addDaysToIsoDate(todayKeyInTimeZone(), daysFromNow);
 }
 
 export const SCHOLARSHIPS: readonly Scholarship[] = [
@@ -35,7 +36,7 @@ export const SCHOLARSHIPS: readonly Scholarship[] = [
     org: 'Government of Bihar',
     initials: 'BR',
     amount: 'Education loan up to ₹4L',
-    incomeCap: NO_CAP,
+    incomeCap: null,
     levels: ['UG', 'PG', 'Diploma'],
     categories: ['All'],
     minMarks: 0,
@@ -112,7 +113,7 @@ export const SCHOLARSHIPS: readonly Scholarship[] = [
     org: 'Government of Bihar',
     initials: 'BR',
     amount: '₹50,000 one-time',
-    incomeCap: NO_CAP,
+    incomeCap: null,
     levels: ['UG'],
     categories: ['All'],
     minMarks: 0,
@@ -206,7 +207,7 @@ export const SCHOLARSHIPS: readonly Scholarship[] = [
     org: 'Department of Science and Technology',
     initials: 'ST',
     amount: '₹80,000 / year',
-    incomeCap: NO_CAP,
+    incomeCap: null,
     levels: ['UG', 'PG'],
     categories: ['All'],
     minMarks: 85,
@@ -395,7 +396,7 @@ export const SCHOLARSHIPS: readonly Scholarship[] = [
   },
 ];
 
-export const DOCUMENTS: readonly string[] = [
+export const DOCUMENTS: readonly DocumentId[] = [
   'Aadhaar',
   'Income certificate',
   'Caste certificate',
@@ -413,7 +414,7 @@ export const DOCUMENTS: readonly string[] = [
   'Self-declaration of minority community',
 ];
 
-export const DEFAULT_READY_DOCS: readonly string[] = ['Aadhaar', 'Marksheet', 'Class 12 marksheet'];
+export const DEFAULT_READY_DOCS: readonly DocumentId[] = ['Aadhaar', 'Marksheet', 'Class 12 marksheet'];
 
 export const DEMO_PRESET = {
   profile: {
@@ -427,7 +428,7 @@ export const DEMO_PRESET = {
     interests: 'Computer Science, Artificial Intelligence, Community Service',
   },
   tracking: {
-    1: 'progress' as const, // Post-Matric SC/OBC
+    9: 'progress' as const, // PM YASASVI (OBC/EWS)
     3: 'submitted' as const, // Central Sector Scheme
     5: 'saved' as const, // Reliance Foundation
     8: 'progress' as const, // HDFC Badhte Kadam
@@ -441,5 +442,5 @@ export const DEMO_PRESET = {
     'Income certificate',
     'Category certificate',
     'Bank passbook',
-  ],
+  ] satisfies readonly DocumentId[],
 };

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useApp } from '../state/AppState';
+import { useAppActions, useAppState } from '../state/AppState';
 import { answer } from '../lib/assistant';
 import { cleanText } from '../lib/sanitize';
 import { SCHOLARSHIPS } from '../data/scholarships';
@@ -16,11 +16,10 @@ const SUGGESTIONS = [
   'Tips to improve my chances',
 ];
 
-let nextId = 1;
-
 export default function Assistant({ onDetails }: { onDetails: (id: number) => void }) {
-  const { state } = useApp();
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const state = useAppState();
+  const { notify } = useAppActions();
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 0,
       role: 'assistant',
@@ -28,40 +27,62 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
     },
   ]);
   const [draft, setDraft] = useState('');
-  const [thinking, setThinking] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const copyTimer = useRef<number | null>(null);
+  const nextId = useRef(1);
 
-  const copyText = (id: number, text: string) => {
-    void navigator.clipboard?.writeText(text);
-    setCopiedId(id);
-    window.setTimeout(() => setCopiedId((curr) => (curr === id ? null : curr)), 2000);
-  };
+  useEffect(() => () => {
+    if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+  }, []);
 
   useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, thinking]);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: reduce ? 'auto' : 'smooth' });
+  }, [messages]);
 
-  const ask = (question: string) => {
+  const copyText = async (id: number, text: string): Promise<void> => {
+    try {
+      if (navigator.clipboard === undefined) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => {
+        setCopiedId((curr) => (curr === id ? null : curr));
+        copyTimer.current = null;
+      }, 2000);
+    } catch {
+      setCopiedId(null);
+      notify('Copy failed — select the response text and copy manually');
+    }
+  };
+
+  const ask = (question: string): void => {
     const cleaned = cleanText(question, 300);
-    if (cleaned.trim() === '' || thinking) return;
-    setMessages((m) => [...m, { id: nextId++, role: 'user', text: cleaned }]);
+    if (cleaned.trim() === '') return;
+    const reply = answer(cleaned, state);
+    const userId = nextId.current++;
+    const assistantId = nextId.current++;
+    setMessages((m) => [
+      ...m,
+      { id: userId, role: 'user', text: cleaned },
+      {
+        id: assistantId,
+        role: 'assistant',
+        text: reply.text,
+        ...(reply.related !== undefined ? { related: reply.related } : {}),
+      },
+    ]);
     setDraft('');
-    setThinking(true);
-    window.setTimeout(() => {
-      const reply = answer(cleaned, state);
-      setMessages((m) => [...m, { id: nextId++, role: 'assistant', text: reply.text, ...(reply.related !== undefined ? { related: reply.related } : {}) }]);
-      setThinking(false);
-    }, 450 + Math.random() * 350);
   };
 
   return (
     <>
-      <PageHead eyebrow="On-device intelligence" title="Meet Grant, your funding assistant." actions={
-        <span className="ai-badge">
-          <SparkIcon /> Private by design
-        </span>
-      }>
+      <PageHead
+        eyebrow="On-device intelligence"
+        title="Meet Grant, your funding assistant."
+        actions={<span className="ai-badge"><SparkIcon /> Private by design</span>}
+      >
         Ask about scholarships, deadlines, and documents — answers are computed locally from your profile.
       </PageHead>
 
@@ -70,13 +91,11 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
           {messages.map((m) => (
             <div key={m.id} className={`bubble-row ${m.role}`}>
               {m.role === 'assistant' && (
-                <span className="bubble-avatar" aria-hidden="true">
-                  <SparkIcon />
-                </span>
+                <span className="bubble-avatar" aria-hidden="true"><SparkIcon /></span>
               )}
               <div className={`bubble ${m.role}`}>
                 {m.text.split('\n').map((line, i) => (
-                  <p key={i}>{line === '' ? ' ' : line}</p>
+                  <p key={i}>{line === '' ? ' ' : line}</p>
                 ))}
                 {m.related !== undefined && m.related.length > 0 && (
                   <div className="bubble-chips">
@@ -95,8 +114,8 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
                     <button
                       type="button"
                       className="copy-btn"
-                      onClick={() => copyText(m.id, m.text)}
-                      aria-label="Copy response text"
+                      onClick={() => { void copyText(m.id, m.text); }}
+                      aria-label={copiedId === m.id ? 'Response copied' : 'Copy response text'}
                     >
                       {copiedId === m.id ? 'Copied ✓' : 'Copy response'}
                     </button>
@@ -105,25 +124,11 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
               </div>
             </div>
           ))}
-          {thinking && (
-            <div className="bubble-row assistant">
-              <span className="bubble-avatar" aria-hidden="true">
-                <SparkIcon />
-              </span>
-              <div className="bubble assistant typing" aria-label="Assistant is typing">
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="chat-suggest" aria-label="Suggested questions">
+        <div className="chat-suggest" role="group" aria-label="Suggested questions">
           {SUGGESTIONS.map((s) => (
-            <button key={s} type="button" className="chip" onClick={() => ask(s)}>
-              {s}
-            </button>
+            <button key={s} type="button" className="chip" onClick={() => ask(s)}>{s}</button>
           ))}
         </div>
 
@@ -134,9 +139,7 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
             ask(draft);
           }}
         >
-          <label htmlFor="chat-field" className="visually-hidden">
-            Ask the assistant a question
-          </label>
+          <label htmlFor="chat-field" className="visually-hidden">Ask the assistant a question</label>
           <input
             id="chat-field"
             value={draft}
@@ -144,7 +147,7 @@ export default function Assistant({ onDetails }: { onDetails: (id: number) => vo
             placeholder="Ask about eligibility, deadlines, documents…"
             onChange={(e) => setDraft(e.target.value)}
           />
-          <Button variant="primary" type="submit" aria-label="Send message" disabled={draft.trim() === '' || thinking}>
+          <Button variant="primary" type="submit" aria-label="Send message" disabled={draft.trim() === ''}>
             <SendIcon />
           </Button>
         </form>

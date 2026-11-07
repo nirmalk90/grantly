@@ -1,11 +1,13 @@
-import { useApp } from '../state/AppState';
+import { useAppActions, useAppState } from '../state/AppState';
 import { DOCUMENTS, SCHOLARSHIPS } from '../data/scholarships';
+import { getDocumentReadiness } from '../lib/selectors';
 import { Button, PageHead, ProgressBar } from '../components/ui';
 import { FileIcon } from '../components/icons';
 
 export default function Vault() {
-  const { state, dispatch, notify } = useApp();
-  const pct = state.readyDocs.length / DOCUMENTS.length;
+  const state = useAppState();
+  const { dispatch, notify } = useAppActions();
+  const readiness = getDocumentReadiness(state.readyDocs);
 
   return (
     <>
@@ -15,8 +17,10 @@ export default function Vault() {
         actions={
           <Button
             onClick={() => {
-              for (const doc of [...state.readyDocs]) dispatch({ type: 'toggle-doc', doc });
-              notify('Checklist reset');
+              if (state.readyDocs.length === 0 || window.confirm('Reset the document readiness checklist?')) {
+                for (const doc of [...state.readyDocs]) dispatch({ type: 'toggle-doc', doc });
+                notify('Checklist reset');
+              }
             }}
           >
             Reset checklist
@@ -28,12 +32,10 @@ export default function Vault() {
 
       <div className="panel vault-summary">
         <div>
-          <strong>{Math.round(pct * 100)}% ready</strong>
-          <p className="panel-note">
-            {state.readyDocs.length} of {DOCUMENTS.length} essentials prepared
-          </p>
+          <strong>{Math.round(readiness.ratio * 100)}% ready</strong>
+          <p className="panel-note">{readiness.ready} of {readiness.total} essentials marked ready</p>
         </div>
-        <ProgressBar value={pct} label="Overall document readiness" />
+        <ProgressBar value={readiness.ratio} label="Overall document readiness" />
       </div>
 
       <ul className="vault-grid" aria-label="Document checklist">
@@ -42,9 +44,7 @@ export default function Vault() {
           const ready = state.readyDocs.includes(doc);
           return (
             <li key={doc} className="vault-doc">
-              <span className={`doc-icon ${ready ? 'ready' : ''}`} aria-hidden="true">
-                <FileIcon />
-              </span>
+              <span className={`doc-icon ${ready ? 'ready' : ''}`} aria-hidden="true"><FileIcon /></span>
               <label className="check-line grow">
                 <input
                   type="checkbox"
@@ -53,9 +53,7 @@ export default function Vault() {
                 />
                 <span>
                   <strong>{doc}</strong>
-                  <small>
-                    Needed by {needed} opportunit{needed === 1 ? 'y' : 'ies'}
-                  </small>
+                  <small>Needed by {needed} opportunit{needed === 1 ? 'y' : 'ies'}</small>
                 </span>
               </label>
               <span className={`doc-status ${ready ? 'ok' : ''}`}>{ready ? 'Ready' : 'Missing'}</span>
@@ -67,7 +65,7 @@ export default function Vault() {
       <div className="panel panel-accent safety">
         <h3 className="panel-title">Keep your information safe</h3>
         <p className="panel-note">
-          Grantly never uploads your documents — this checklist stays in your browser. Always submit sensitive
+          Grantly never uploads or verifies your documents — this checklist stays in your browser. Always submit sensitive
           documents through the official scholarship portal, and never share passwords or OTPs with anyone.
         </p>
       </div>

@@ -3,11 +3,28 @@ export type Page = 'overview' | 'discover' | 'assistant' | 'applications' | 'dea
 export type Stage = 'saved' | 'progress' | 'submitted' | 'awarded';
 
 export type Level = 'UG' | 'PG' | 'Diploma';
-export type Category = 'All' | 'SC' | 'ST' | 'OBC' | 'EWS';
-export type Gender = 'F' | 'M';
+export type Category = 'All' | 'General' | 'SC' | 'ST' | 'OBC' | 'EWS';
+export type Gender = 'F' | 'M' | 'Other';
 export type Theme = 'dark' | 'light';
 export type Filter = 'all' | 'eligible' | 'closing';
 export type SortKey = 'best' | 'deadline';
+
+export type DocumentId =
+  | 'Aadhaar'
+  | 'Income certificate'
+  | 'Caste certificate'
+  | 'Category certificate'
+  | 'Marksheet'
+  | 'Class 12 marksheet'
+  | 'Residence certificate'
+  | 'Bank passbook'
+  | 'Admission letter'
+  | 'Fee receipt'
+  | 'Statement of purpose'
+  | 'Offer letter'
+  | 'Passport'
+  | 'Graduation certificate'
+  | 'Self-declaration of minority community';
 
 export interface Profile {
   name: string;
@@ -26,15 +43,16 @@ export interface Scholarship {
   org: string;
   initials: string;
   amount: string;
-  /** Max annual family income in INR; a large sentinel means "no cap". */
-  incomeCap: number;
+  /** Max annual family income in INR; null means no published cap. */
+  incomeCap: number | null;
   levels: Level[];
   categories: Category[];
   minMarks: number;
   state: string;
   gender?: Gender;
-  deadline: string; // ISO date
-  docs: string[];
+  /** ISO calendar date. Deadlines are interpreted in the scheme timezone. */
+  deadline: string;
+  docs: DocumentId[];
   kind: string;
   tone: 'green' | 'amber' | 'violet';
   about: string;
@@ -58,7 +76,7 @@ export interface AppState {
   filter: Filter;
   sort: SortKey;
   tracking: Record<number, Stage>;
-  readyDocs: string[];
+  readyDocs: DocumentId[];
   theme: Theme;
 }
 
@@ -71,10 +89,11 @@ export type Action =
   | { type: 'track'; id: number }
   | { type: 'untrack'; id: number }
   | { type: 'move'; id: number; stage: Stage }
-  | { type: 'toggle-doc'; doc: string }
+  | { type: 'toggle-doc'; doc: DocumentId }
   | { type: 'toggle-theme' }
   | { type: 'load-demo' }
-  | { type: 'reset-demo' };
+  | { type: 'reset-demo' }
+  | { type: 'clear-data' };
 
 export interface ChatMessage {
   id: number;

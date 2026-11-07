@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import './styles.css';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import './boot.css';
 
 const rootEl = document.getElementById('root');
 if (rootEl === null) {
@@ -10,6 +11,8 @@ if (rootEl === null) {
 
 createRoot(rootEl).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );

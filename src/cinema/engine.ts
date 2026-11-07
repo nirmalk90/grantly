@@ -22,6 +22,7 @@
 
 export interface UniverseOptions {
   reducedMotion: boolean;
+  onContextLost?: () => void;
 }
 
 export interface Universe {
@@ -29,6 +30,7 @@ export interface Universe {
   setProgress(progress: number): void;
   /** Normalized pointer position (-1..1 on both axes) for subtle parallax. */
   setPointer(x: number, y: number): void;
+  setPaused(paused: boolean): void;
   destroy(): void;
 }
 
@@ -471,7 +473,7 @@ export function createUniverse(canvas: HTMLCanvasElement, options: UniverseOptio
     antialias: false,
     depth: false,
     stencil: false,
-    powerPreference: 'high-performance',
+    powerPreference: 'default',
   });
   if (!gl) return null;
 
@@ -558,7 +560,12 @@ export function createUniverse(canvas: HTMLCanvasElement, options: UniverseOptio
   let raf = 0;
   let last = 0;
   let destroyed = false;
+  let paused = false;
   let dpr = 1;
+  let accumulator = 0;
+  let redrawStatic: (() => void) | null = null;
+  const targetFps = cores <= 4 || smallScreen ? 30 : 60;
+  const frameInterval = 1 / targetFps;
 
   const resize = (): void => {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -568,6 +575,7 @@ export function createUniverse(canvas: HTMLCanvasElement, options: UniverseOptio
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     gl.viewport(0, 0, canvas.width, canvas.height);
+    redrawStatic?.();
   };
 
   const bindAttrib = (loc: number, buf: WebGLBuffer | null, size: number): void => {
@@ -644,28 +652,47 @@ export function createUniverse(canvas: HTMLCanvasElement, options: UniverseOptio
   };
 
   const frame = (now: number): void => {
-    if (destroyed) return;
+    if (destroyed || paused) return;
     raf = window.requestAnimationFrame(frame);
     const dt = last === 0 ? 0.016 : Math.min((now - last) / 1000, 0.05);
     last = now;
-    renderFrame(dt);
+    accumulator += dt;
+    if (accumulator < frameInterval) return;
+    const step = accumulator;
+    accumulator = 0;
+    renderFrame(step);
+  };
+
+  const stop = (): void => {
+    if (raf !== 0) window.cancelAnimationFrame(raf);
+    raf = 0;
+  };
+
+  const start = (): void => {
+    if (destroyed || options.reducedMotion || paused || raf !== 0) return;
+    last = 0;
+    accumulator = 0;
+    raf = window.requestAnimationFrame(frame);
   };
 
   const onVisibility = (): void => {
     if (destroyed || options.reducedMotion) return;
-    if (document.hidden) {
-      if (raf !== 0) window.cancelAnimationFrame(raf);
-      raf = 0;
-    } else if (raf === 0) {
-      last = 0;
-      raf = window.requestAnimationFrame(frame);
-    }
+    if (document.hidden) stop();
+    else start();
   };
 
+  const onContextLost = (event: Event): void => {
+    event.preventDefault();
+    stop();
+    options.onContextLost?.();
+  };
+
+  redrawStatic = () => renderFrame(0);
   resize();
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', resize);
   document.addEventListener('visibilitychange', onVisibility);
+  canvas.addEventListener('webglcontextlost', onContextLost);
 
   if (options.reducedMotion) {
     // Honor prefers-reduced-motion: settle on the final galaxy, one frame,
@@ -685,16 +712,23 @@ export function createUniverse(canvas: HTMLCanvasElement, options: UniverseOptio
       targetProgress = clamp01(p);
     },
     setPointer(x: number, y: number): void {
-      if (options.reducedMotion || destroyed) return;
+      if (options.reducedMotion || destroyed || paused) return;
       targetPointerX = Math.min(1, Math.max(-1, x));
       targetPointerY = Math.min(1, Math.max(-1, y));
     },
+    setPaused(value: boolean): void {
+      if (destroyed) return;
+      paused = value;
+      if (paused) stop();
+      else start();
+    },
     destroy(): void {
       destroyed = true;
-      if (raf !== 0) window.cancelAnimationFrame(raf);
+      stop();
       window.removeEventListener('resize', resize);
       window.removeEventListener('orientationchange', resize);
       document.removeEventListener('visibilitychange', onVisibility);
+      canvas.removeEventListener('webglcontextlost', onContextLost);
       for (const buf of [posBuf0, posBuf1, posBuf2, posBuf3, dataBuf, starPosBuf, starDataBuf]) {
         gl.deleteBuffer(buf);
       }

@@ -19,8 +19,13 @@ export function Tag({ children, tone = 'neutral' }: { children: ReactNode; tone?
   return <span className={`tag tag-${tone}`}>{children}</span>;
 }
 
+function clampRatio(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(1, Math.max(0, value));
+}
+
 export function ProgressBar({ value, label }: { value: number; label: string }) {
-  const pct = Math.round(value * 100);
+  const pct = Math.round(clampRatio(value) * 100);
   return (
     <div
       className="progress"
@@ -28,6 +33,7 @@ export function ProgressBar({ value, label }: { value: number; label: string }) 
       aria-valuenow={pct}
       aria-valuemin={0}
       aria-valuemax={100}
+      aria-valuetext={`${pct}%`}
       aria-label={label}
     >
       <div className="progress-fill" style={{ width: `${pct}%` }} />
@@ -36,16 +42,17 @@ export function ProgressBar({ value, label }: { value: number; label: string }) 
 }
 
 export function MatchRing({ score, size = 44 }: { score: number; size?: number }) {
+  const safeScore = Number.isFinite(score) ? Math.min(100, Math.max(0, Math.round(score))) : 0;
   const r = 40;
   const circumference = 2 * Math.PI * r;
-  const offset = circumference * (1 - score / 100);
+  const offset = circumference * (1 - safeScore / 100);
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 100 100"
       role="img"
-      aria-label={`${score}% match`}
+      aria-label={`${safeScore}% match`}
       className="match-ring"
     >
       <circle cx="50" cy="50" r={r} className="ring-track" />
@@ -59,7 +66,7 @@ export function MatchRing({ score, size = 44 }: { score: number; size?: number }
         transform="rotate(-90 50 50)"
       />
       <text x="50" y="55" textAnchor="middle" className="ring-text">
-        {score}
+        {safeScore}
       </text>
     </svg>
   );
@@ -75,7 +82,7 @@ export function Empty({
   action?: ReactNode;
 }) {
   return (
-    <div className="empty">
+    <div className="empty" role="status">
       <p className="empty-title">{title}</p>
       {hint !== undefined && <p className="empty-hint">{hint}</p>}
       {action !== undefined && <div className="empty-action">{action}</div>}
@@ -118,13 +125,13 @@ export function Metric({
   icon: ReactNode;
 }) {
   return (
-    <div className="metric">
+    <li className="metric">
       <div className="metric-head">
         <span>{label}</span>
-        <span className="metric-icon">{icon}</span>
+        <span className="metric-icon" aria-hidden="true">{icon}</span>
       </div>
       <strong className="metric-value">{value}</strong>
       {hint !== undefined && <small className="metric-hint">{hint}</small>}
-    </div>
+    </li>
   );
 }
